@@ -31,12 +31,12 @@ for (const a in animals) {
 };
 
 const content = (
-<div>
-    <h1>{ title === "" ? 'Click an animal for a fun fact' : title}</h1>
-    <p id='fact'></p>
-    {showBackground && background}
-    <div className='animals'>{images}</div>
-</div>
+    <div>
+        <h1>{ title === "" ? 'Click an animal for a fun fact' : title}</h1>
+        <p id='fact'></p>
+        {showBackground && background}
+        <div className='animals'>{images}</div>
+    </div>
 );
 
 
