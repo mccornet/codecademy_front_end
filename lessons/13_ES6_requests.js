@@ -4,15 +4,15 @@
 //
 fetch('https://api-to-call.com/endpoint')
 .then((response) => {
-  if(response.ok) {
+if(response.ok) {
     return response.json();
   }
-  throw new Error('Request failed!');
+    throw new Error('Request failed!');
 }, (networkError) => {
-  console.log(networkError.message);
+    console.log(networkError.message);
 })
 .then((jsonResponse) =>{
-  return jsonResponse;
+    return jsonResponse;
 })
 
 //
@@ -53,18 +53,18 @@ const getSuggestions = () => {
 
 
 fetch('https://api-to-call.com/endpoint', {
-  method: 'POST',
-  body: JSON.stringify({id: '200'})
+    method: 'POST',
+    body: JSON.stringify({id: '200'})
 })
 .then((response) => {
-  if (response.ok) {
-    return response.json();
-  }
-  throw new Error('Request failed!');
+    if (response.ok) {
+        return response.json();
+    }
+    throw new Error('Request failed!');
 }, (networkError) => {
-  console.log(networkError.message);
+    console.log(networkError.message);
 })
 .then((jsonResponse) => {
-  return jsonResponse;
+    return jsonResponse;
 })
 
