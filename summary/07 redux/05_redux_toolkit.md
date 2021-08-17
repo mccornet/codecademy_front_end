@@ -1,4 +1,6 @@
-# Reduc Toolkit
+# Reduce Toolkit
+
+[Redux Toolkit documentation](https://redux-toolkit.js.org/)
 
 ## Installing Redux Toolkit
 
@@ -529,3 +531,317 @@ Note all the work that this one call to `configureStore()` does for us:
 - It automatically sets up the Redux DevTools Extension connection
 
 Because of how much boilerplate code we’re able to bypass with `configureStore()`, we can just import the individual slice reducers straight into this file instead of creating a separate file for the root reducer and having to export/import it. Since this is as simple as switching out the store setup code, all of the application’s existing feature code will work just fine!
+
+**tasks**
+
+```jsx
+/*
+In the code editor, import configureStore at the top of store.js.
+
+Change the ‘favoriteRecipesReducer’ import so that it’s being imported from 
+../features/favoriteRecipes/favoriteRecipesSlice.js.
+
+Rewrite the default export so that it uses configureStore() instead of createStore() 
+to create the store with the given reducers.
+*/
+import { configureStore } from '@reduxjs/toolkit';
+import { createStore, combineReducers } from 'redux';
+import favoriteRecipesReducer from '../features/favoriteRecipes/favoriteRecipesSlice.js';
+import searchTermReducer from '../features/searchTerm/searchTermSlice.js';
+import allRecipesReducer from '../features/allRecipes/allRecipesSlice.js';
+
+
+/* old code:
+export default createStore(combineReducers({
+  favoriteRecipes: favoriteRecipesReducer,
+  searchTerm: searchTermReducer,
+  allRecipes: allRecipesReducer
+}));
+*/
+
+const store = configureStore({
+  reducer: {
+    favoriteRecipes: favoriteRecipesReducer,
+    searchTerm: searchTermReducer,
+    allRecipes: allRecipesReducer
+  }
+});
+export default store
+```
+
+## Summary
+
+- **R**edux **T**ool**k**it (RTK) contains packages and functions that build in suggested best practices, simplifies most Redux tasks, prevents common mistakes, and makes it easier to write Redux applications.
+- RTK has a `createSlice()` function that will help us simplify our Redux reducer logic and actions.
+- `createSlice()` has one parameter, `options`. In this lesson, we covered three of `option`‘s properties: `name`, `initialState`, and `reducers`. `options` has more properties which will be covered in the next lessons.
+- A case reducer is a method that can update the state, and will be executed when the corresponding action type is dispatched. This is similar to a case in a switch statement.
+- You can write code that “mutates” the state inside the case reducers passed to `createSlice()`, and Immer will safely and accurately return an immutably updated state.
+- `createSlice()` returns an object with the following properties: `name`, `reducer`, `actions`, and `caseReducers`.
+- `createSlice()` has one parameter, `options`. In this lesson, we covered the `option` properties: `name`, `initialState`, and `reducers`. `options` has more properties which will be covered in the next lessons.
+- We typically use a Redux community code convention called the “ducks” pattern when exporting the action creators and the reducer.
+- RTK has a `configureStore()` function that simplifies the store setup process. `configureStore()` wraps around the Redux core `createStore()` function and the `combineReducers()` function, and handles most of the store setup for us automatically.
+
+[Redux Toolkit documentation](https://redux-toolkit.js.org/)
+
+## Expense Tracker
+
+This project—a budgeting and expense tracking app—allows you to practice refactoring with Redux Toolkit. The app allows you to set budgets for various categories, such as food and transportation, and track transactions in those categories. It then sums your spending in each category to calculate the amount of money that remains to be spent.
+
+To help you to understand how the data of the application works, consider an example of the Redux store’s state:
+
+```
+{
+  budgets: [ 
+    { category: 'housing', amount: 400 },
+    { category: 'food', amount: 100 },
+    ...
+  ],
+  transactions: {
+    housing: [ 
+      { 
+        category: 'housing', 
+        description: 'rent', 
+        amount: 400, 
+        id: 123 
+      }
+    ],
+    food: [ 
+      { 
+        category: 'food', 
+        description: 'groceries on 1/12/2021', 
+        amount: 50, 
+        id: 456 
+      },
+      { 
+        category: 'food', 
+        description: 'dinner on 1/16/2021', 
+        amount: 12, 
+        id: 789 
+      },
+    ]
+  }
+ 
+ 
+}
+```
+
+You will work primarily in **budgetsSlice.js** and **transactionsSlice.js** where reducers and action creators are currently programmed by hand. Your task will be to refactor this project using a slice-based approach to produce the app’s actions and reducers.
+
+Before you get started, spend some time using the app in its current implementation to ensure you understand how it’s supposed to work. Set a budget of $300 for food, create a $20 food transaction, and then check the food budget again to see how much you have left to spend. As you progress through the project, take note of the ways that Redux Toolkit simplifies your code.
+
+### budgetSlice.js
+
+```jsx
+/*
+Import createSlice from @reduxjs/toolkit.
+
+
+Next, you are going to define a slice by calling createSlice() with a configuration object 
+containing the required name, initialState, and reducers properties.
+
+- Define a variable, budgetsSlice, and initialize it with a call to createSlice(), 
+  passing in an empty configuration object. Do this right after the line defining initialState.
+
+- Slices are conventionally named for the resource whose state they manage. 
+  This slice manages budgets and should be named accordingly. 
+  To give the slice a name, add a name property to the configuration object and set it equal to   
+  'budgets'.
+  
+- Add an initialState property to the configuration object, and set it equal to the variable
+  initialState that we’ve defined for you.
+
+- Lastly, you’ll need to include a reducers property in the configurations object.
+  For now, set it equal to an empty object.
+
+
+In budgetsSlice.js, which we originally wrote without Redux Toolkit, you’ll see an editBudget()
+action creator. Currently, the action dispatched by that action creator will be processed in the
+'budgets/editBudget' case of the budgetsReducer() we’ve provided. Open components/Budget.js 
+where you can see this action being dispatched like so:
+
+dispatch(editBudget({category: budget.category, amount: amount}))
+createSlice() automatically generates action creators and action types based on the case reducer
+functions we include in the reducers property. Once we define an editBudget case reducer, 
+we will be able to delete our standalone action creators and reducers, 
+and greatly simplify our code in the process.
+
+- Add an editBudget property to the reducers object passed to createSlice().
+
+- Set editBudget equal to a case reducer that receives two arguments—state and action .
+  action.payload will have a category and amount property. editBudget should update the state 
+  by finding the budget object whose .category value matches action.payload.category and 
+  changing with the .amount value to action.payload.amount.
+
+Now that you’ve implemented budgetsSlice, you’ll want to delete your old code and clean up your exports.
+
+- Delete the stand-alone editBudget. At the bottom of the file budgetsSlice.js, export the 
+  editBudget action creator generated by createSlice() and stored in budgetsSlice.
+- Delete the stand-alone budgetsReducer, and update the export default statement to export 
+  the reducer generated by createSlice() and stored in budgetsSlice. Once you’ve completed 
+  this task, you should be able to edit budgets and see your changes reflected in the app.
+
+*/
+
+import { createSlice } from '@reduxjs/toolkit';
+
+export const CATEGORIES = ['housing', 'food', 'transportation', 'utilities', 'clothing', 'healthcare', 'personal', 'education', 'entertainment'];
+const initialState = CATEGORIES.map(category => ({ category: category, amount: 0 }))
+
+const budgetSlice = createSlice({
+  name: budgets,
+  initialState: initialState,
+  reducers: {
+    editBudget: (state, action) => {
+      return state
+        .filter(budget => budget.category === action.payload.category).
+        .map(budget => budget.amount -= action.payload.amount)
+    }
+  }
+});
+
+/*
+export const editBudget = (budget) => {
+  return {
+    type: 'budgets/editBudget',
+    payload: budget
+  }
+}
+*/
+export const { editBudget } = budgetSlice.actions;
+export default budgetSlice.reducer;
+
+/*
+const budgetsReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case 'budgets/editBudget':
+      const newBudgets = state.map(budget => {
+        if (budget.category === action.payload.category) {
+          return action.payload;
+        }
+        return budget;
+      })
+      return newBudgets;
+    default:
+      return state;
+  }
+}
+
+export const selectBudgets = (state) => state.budgets;
+export default budgetsReducer;
+*/
+```
+
+### Transactions Slice
+
+```jsx
+/*
+
+Import createSlice from @reduxjs/toolkit
+
+
+Next, you are going to define a slice by calling createSlice() with a configuration object 
+containing the required name, initialState, and reducers properties.
+
+- Define a variable, transactionsSlice, and initialize it with a call to createSlice(), 
+  passing in an empty configuration object.
+  
+-  Add a name property to the configuration object and set it equal to 'transactions'.
+
+- Add an initialState property to the configuration object, and set it equal to the variable
+  initialState that we’ve defined for you.
+
+- Lastly, you’ll need to include a reducers property in the configurations object. 
+  For now, set it equal to an empty object.
+
+Replace the stand-alone action creators and the reducer with case reducers defined in the object passed to createSlice().
+
+- Add an addTransaction property to the reducers object passed to createSlice().
+
+- Set addTransaction equal to a case reducer that receives two arguments—state and action. 
+  It should add the new transaction object (action.payload) to the correct category’s 
+  transaction list in the transactions state object.
+
+- Add a deleteTransaction property to the reducers object passed to createSlice().
+
+- Set deleteTransaction equal to a case reducer that receives two arguments—state and action.
+  It should delete the old transaction (action.payload) from the correct category’s transaction 
+  list in the transactions state object.
+
+Now that you’ve implemented transactionsSlice, you’ll want to delete your old code 
+and clean up your exports.
+
+- Delete the stand-alone addTransaction and deleteTransaction, and export the addTransaction 
+  and deleteTransaction action creators generated by createSlice() and stored in transactionsSlice.
+  
+- Delete the stand-alone transactionsReducer, and update the export default statement to export 
+  the reducer generated by createSlice() and stored in transactionsSlice.
+  
+*/
+
+import { createSlice } from '@reduxjs/toolkit';
+
+export const CATEGORIES = ['housing', 'food', 'transportation', 'utilities', 'clothing', 'healthcare', 'personal', 'education', 'entertainment'];
+const initialState = Object.fromEntries(CATEGORIES.map(category => [category, []]))
+
+const transactionsSlice = createSlice({
+  name: transactions,
+  initialState: initialState,
+  reducers: {
+    addTransaction: (state, action) => {
+      // 1. Find the category in `state` that matches the `category` property on `action.payload`
+      // 2. Add the new transaction (`action.payload`) to that category's transaction array.   
+      state[action.payload.categery].push(action.payload)
+
+    },
+    deleteTransaction: (state, action) => {
+      // 1. Find the category in `state` that matches the `category` property on `action.payload` 
+      // 2.  Filter out the old transaction (the transaction with an `id` matching the `id` property 
+      //     on `action.payload`) from that category's transaction array.
+      const deletedIndex = state[action.payload.category].findIndex(transaction => transaction.id === action.payload.id);
+      state[action.payload.categery] = state[action.payload.category].filter((item, index) => index !== deletedIndex)
+    }
+  }
+});
+
+export const { addTransaction, deleteTransaction } = budgetSlice.actions;
+
+/*
+export const addTransaction = (transaction) => {
+  return {
+    type: 'transactions/addTransaction',
+    payload: transaction
+  }
+}
+
+export const deleteTransaction = (transaction) => {
+  return {
+    type: 'transactions/deleteTransaction',
+    payload: transaction
+  }
+}
+*/
+
+export const selectTransactions = (state) => state.transactions;
+export const selectFlattenedTransactions = (state) => Object.values(state.transactions).reduce((a,b) => [...a, ...b], []);
+
+/*
+const transactionsReducer = (state = initialState, action) => {
+  let newTransactionsForCategory;
+  switch (action.type) {
+    case 'transactions/addTransaction':
+      newTransactionsForCategory = [...state[action.payload.category].slice(), action.payload]
+      return { ...state, [action.payload.category]: newTransactionsForCategory}
+    case 'transactions/deleteTransaction':
+      const deletedIndex = state[action.payload.category].findIndex(transaction => transaction.id === action.payload.id);
+      newTransactionsForCategory = state[action.payload.category].filter((item, index) => index !== deletedIndex)
+      return { ...state, [action.payload.category]: newTransactionsForCategory}
+    default:
+      return state;
+  }
+}
+
+export default transactionsReducer;
+*/
+export default budgetSlice.reducer;
+```
+
