@@ -1,3 +1,11 @@
+/*
+This project was not challenging at all, 
+just following the instructions. 
+But it is included for the sake of completeness
+
+*/
+
+
 const Stack = require('./Stack.js');
 const prompt = require('prompt-sync')();
 // ------------------------------
